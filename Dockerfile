@@ -44,18 +44,16 @@ WORKDIR $HOME/tmp
 USER user
 
 # Copy the file from the host to the container
-COPY --chown=user:user BT_Audio_Linux_Build_Env_V5.4.0_exe_V5.4.0.tar.gz $HOME/tmp/
-#COPY --chown=user:user IoT_SDK_for_BT_Audio_V5.4.0.AB158x_exe_V5.4.0.AB158x.7z $HOME/tmp/
+COPY --chown=user:user BT_Audio_Linux_Build_Env.tar.gz $HOME/tmp/
 
 # Extract the airoha toolchain 
-RUN sudo tar -xvf $HOME/tmp/BT_Audio_Linux_Build_Env_V5.4.0_exe_V5.4.0.tar.gz -C $HOME/tmp/
-
-# Extract SDK. 
-# To be replace by git checkout in future
-#RUN 7z x $HOME/tmp/IoT_SDK_for_BT_Audio_V5.4.0.AB158x_exe_V5.4.0.AB158x.7z -o$HOME/bta_sdk
+RUN sudo tar -xvf $HOME/tmp/BT_Audio_Linux_Build_Env.tar.gz -C $HOME/tmp/
 
 # Install airoha toolchain using sudo while preserving the environment
 RUN sudo -E $HOME/tmp/install.sh
+
+# Clean up
+RUN sudo rm -rf $HOME/tmp
 
 # Switch back to home directory
 WORKDIR $HOME

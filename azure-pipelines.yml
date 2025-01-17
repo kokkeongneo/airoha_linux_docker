@@ -1,0 +1,60 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+variables:
+  - group: GitHub
+  - name: tag
+    value: 'latest'
+
+resources:
+  repositories:
+  - repository: BT_Audio_Build_Env
+    type: git
+    name: CDDA/BT_Audio_Build_Env
+    ref: BT_Audio_Linux_Build_Env_V5.4.0
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build_Docker
+    timeoutInMinutes: 480
+    workspace:
+      clean: all  
+
+    displayName: Build Airoha_Docker
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      # Step 1: Checkout the current repository
+      - checkout: self
+        lfs: true
+        clean: false
+
+      - checkout: BT_Audio_Build_Env
+        lfs: true
+        clean: false
+
+      # Step 2: Log in to GitHub Container Registry
+      - script: |
+          echo $(GITHUB_TOKEN) | docker login ghcr.io -u $(GITHUB_REPOSITORY_OWNER) --password-stdin
+        displayName: 'Log in to GitHub Container Registry'
+        env:
+          GITHUB_TOKEN: $(GITHUB_TOKEN)  # Define the GitHub token as an environment variable
+    
+      # Step 3: Build the Docker image
+      - script: |
+          export HOME=$PWD
+          cp -r /$PWD/BT_Audio_Build_Env/BT_Audio_Linux_Build_Env_V5.4.0_exe_V5.4.0.tar.gz /$PWD/Airoha_Docker/BT_Audio_Linux_Build_Env.tar.gz
+          cd Airoha_Docker
+          docker build -f Dockerfile -t ghcr.io/$(GITHUB_REPOSITORY_OWNER)/airoha_env:$(tag) .
+        displayName: 'Build Docker Image'
+      
+      # Step 4: Push the Docker image to GitHub Container Registry
+      - script: |
+          docker push ghcr.io/$(GITHUB_REPOSITORY_OWNER)/airoha_env:$(tag)
+        displayName: 'Push Docker Image'
