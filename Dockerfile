@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package list and install necessary tools
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
 	sudo \
     unzip \
     tar \
@@ -14,7 +14,10 @@ RUN apt update && apt install -y \
 	git-lfs \
 	p7zip-full \
 	python3 \
-	net-tools	
+	net-tools \
+    --no-install-recommends	&& \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
